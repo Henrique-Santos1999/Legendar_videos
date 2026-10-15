@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador e Editor de Legendas</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
+    .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h1 { color: #1a73e8; margin-top: 0; }
+    .ad-box { width: 100%; min-height: 90px; background: #e9ecef; border: 2px dashed #adb5bd; display: flex; align-items: center; justify-content: center; color: #6c757d; margin: 15px 0; border-radius: 8px; font-weight: bold; }
+    input[type="file"] { margin: 15px 0; padding: 10px; border: 1px solid #ccc; border-radius: 6px; width: 100%; max-width: 400px; }
+    video { width: 100%; max-width: 600px; border-radius: 8px; margin-top: 15px; display: none; }
+    .btn { background-color: #1a73e8; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin: 10px 5px; font-weight: bold; }
+    .btn:hover { background-color: #1557b0; }
+  </style>
+
+  <!-- COLE AQUI O SCRIPT DA SUA REDE DE ANÚNCIOS (EX: MONETAG / AD SENSE) -->
+
+</head>
+<body>
+
+  <div class="container">
+    <h1>Gerador e Editor de Legendas</h1>
+    <p>Envie o seu vídeo abaixo para começar a legendar!</p>
+
+    <!-- ANÚNCIO TOPO -->
+    <div class="ad-box">
+      <!-- COLE O CÓDIGO DO ANÚNCIO DE TOPO AQUI -->
+      [ Espaço para Anúncio de Topo ]
+    </div>
+
+    <input type="file" id="videoInput" accept="video/*">
+    <br>
+    <video id="videoPlayer" controls></video>
+
+    <div style="margin-top: 20px;">
+      <button class="btn" onclick="alert('Vídeo carregado com sucesso!')">Processar Vídeo</button>
+    </div>
+
+    <!-- ANÚNCIO RODAPÉ -->
+    <div class="ad-box">
+      <!-- COLE O CÓDIGO DO ANÚNCIO DE RODAPÉ AQUI -->
+      [ Espaço para Anúncio de Rodapé ]
+    </div>
+  </div>
+
+  <script>
+    const videoInput = document.getElementById('videoInput');
+    const videoPlayer = document.getElementById('videoPlayer');
+
+    videoInput.addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const fileURL = URL.createObjectURL(file);
+        videoPlayer.src = fileURL;
+        videoPlayer.style.display = 'block';
+      }
+    });
+  </script>
+
+</body>
+</html>
