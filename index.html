@@ -25,8 +25,10 @@
     }
     .ad-banner:hover { transform: scale(1.02); }
 
-    input[type="file"] { margin: 15px 0; padding: 10px; border: 1px solid #ccc; border-radius: 6px; width: 100%; max-width: 400px; }
-    video, canvas { width: 100%; max-width: 600px; border-radius: 8px; margin-top: 15px; display: none; }
+    input[type="file"] { margin: 15px 0; padding: 12px; border: 2px dashed #1a73e8; border-radius: 8px; width: 100%; max-width: 400px; background: #e8f0fe; cursor: pointer; }
+    
+    video, canvas { width: 100%; max-width: 600px; border-radius: 8px; margin-top: 15px; background: #000; }
+    canvas { display: none; }
     
     .btn {
       background-color: #1a73e8;
@@ -52,6 +54,7 @@
       border: 1px solid #ccc;
       border-radius: 6px;
       resize: vertical;
+      font-size: 15px;
     }
     #statusText { margin-top: 15px; font-weight: bold; color: #1a73e8; font-size: 16px; }
     #downloadArea { display: none; margin-top: 20px; }
@@ -61,7 +64,7 @@
 
   <div class="container">
     <h1>Gerador de Legendas em Vídeo com IA</h1>
-    <p>Envie o seu vídeo para transcrever o áudio e embutir as legendas!</p>
+    <p>Escolha o seu vídeo abaixo para começar!</p>
 
     <!-- BANNER MONETAG -->
     <a href="https://uplcm.com/4/11875710" target="_blank" class="ad-banner">
@@ -71,7 +74,8 @@
     <input type="file" id="videoInput" accept="video/*">
     <br>
 
-    <video id="videoPlayer" controls></video>
+    <!-- PLAYER VISÍVEL DESDE O INÍCIO -->
+    <video id="videoPlayer" controls playsinline></video>
     <canvas id="videoCanvas"></canvas>
 
     <div style="margin-top: 20px;">
@@ -80,7 +84,7 @@
     </div>
 
     <p id="statusText"></p>
-    <textarea id="subtitlesBox" placeholder="O texto transcrito do áudio do seu vídeo aparecerá aqui para você editar se quiser..."></textarea>
+    <textarea id="subtitlesBox" placeholder="O texto transcrito do áudio do seu vídeo aparecerá aqui..."></textarea>
 
     <div id="downloadArea">
       <button class="btn btn-green" onclick="baixarVideoComLegenda()">📥 Baixar Vídeo Legendado (MP4/WebM)</button>
@@ -99,27 +103,29 @@
     const ctx = videoCanvas.getContext('2d');
     const statusText = document.getElementById('statusText');
     const subtitlesBox = document.getElementById('subtitlesBox');
-    const downloadArea = downloadArea = document.getElementById('downloadArea');
+    const downloadArea = document.getElementById('downloadArea');
     const directLink = "https://uplcm.com/4/11875710";
 
     let mediaRecorder;
     let recordedChunks = [];
     let processedVideoBlob = null;
 
-    videoInput.addEventListener('change', function(event) {
-      const file = event.target.files[0];
+    // Garante que o vídeo carrega assim que for selecionado no celular
+    videoInput.addEventListener('change', function() {
+      const file = this.files[0];
       if (file) {
         const fileURL = URL.createObjectURL(file);
         videoPlayer.src = fileURL;
+        videoPlayer.load();
+        
         videoPlayer.style.display = 'block';
         videoCanvas.style.display = 'none';
         downloadArea.style.display = 'none';
         subtitlesBox.value = '';
-        statusText.innerText = '';
+        statusText.innerText = '✅ Vídeo carregado! Clique em "1. Transcrever Áudio" ou digite a legenda na caixa.';
       }
     });
 
-    // Função para escutar o áudio do vídeo usando o Reconhecimento de Voz nativo
     function transcreverAudioReal() {
       window.open(directLink, '_blank');
 
@@ -130,7 +136,7 @@
 
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert('Seu navegador não suporta a transcrição nativa. Digite o texto da legenda na caixa abaixo!');
+        alert('Reconhecimento automático não suportado neste navegador. Você pode digitar o texto na caixa abaixo!');
         return;
       }
 
@@ -139,7 +145,7 @@
       recognition.continuous = true;
       recognition.interimResults = true;
 
-      statusText.innerText = "🎙️ Reproduzindo vídeo e escutando o áudio em Português...";
+      statusText.innerText = "🎙️ Reproduzindo vídeo e escutando o áudio...";
       subtitlesBox.value = "";
 
       videoPlayer.currentTime = 0;
@@ -156,15 +162,14 @@
 
       videoPlayer.onended = function() {
         recognition.stop();
-        statusText.innerText = "✅ Transcrição do áudio concluída! Se desejar, faça ajustes no texto acima e clique no botão '2. Gerar Vídeo com Legendas'.";
+        statusText.innerText = "✅ Transcrição concluída! Agora clique em '2. Gerar Vídeo com Legendas'.";
       };
 
       recognition.onerror = function() {
-        statusText.innerText = "⚠️ Dica: Ajuste o texto da legenda na caixa e clique no botão '2. Gerar Vídeo com Legendas'.";
+        statusText.innerText = "⚠️ Dica: Você pode digitar ou ajustar a legenda na caixa de texto abaixo!";
       };
     }
 
-    // Função para desenhar o texto quebrando linhas automaticamente
     function wrapText(context, text, x, y, maxWidth, lineHeight) {
       const words = text.split(' ');
       let line = '';
@@ -183,7 +188,6 @@
       }
       lines.push(line);
 
-      // Desenha fundo e linhas
       const startY = y - (lines.length - 1) * lineHeight;
       for (let k = 0; k < lines.length; k++) {
         let currentText = lines[k].trim();
@@ -212,7 +216,7 @@
 
       const x = videoCanvas.width / 2;
       const y = videoCanvas.height - (fontSize * 2);
-      const maxWidth = videoCanvas.width * 0.85; // Limita a 85% da largura da tela
+      const maxWidth = videoCanvas.width * 0.85;
 
       wrapText(ctx, texto, x, y, maxWidth, fontSize + 8);
 
@@ -227,7 +231,7 @@
         return;
       }
 
-      statusText.innerText = "⏳ Renderizando vídeo com as legendas ajustadas... Aguarde!";
+      statusText.innerText = "⏳ Processando o vídeo e criando as legendas... Aguarde!";
       videoPlayer.style.display = 'none';
       videoCanvas.style.display = 'block';
 
