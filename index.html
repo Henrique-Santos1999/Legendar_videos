@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Editor de Legendas Automáticas Estilo CapCut</title>
+  <title>Ferramentas Web Rápidas - Contador & QR Code</title>
+  <meta name="description" content="Ferramentas gratuitas online: conte caracteres e crie códigos QR Code instantaneamente para redes sociais, PIX e links.">
   
-  <!-- Biblioteca de IA Whisper (Transformers.js) para transcrever áudio no navegador -->
-  <script type="module">
-    import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0';
-    window.transformersPipeline = pipeline;
-  </script>
+  <!-- Biblioteca para Gerar QR Code via JS (Leve e Rápida) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #121212; color: #ffffff; margin: 0; padding: 15px; text-align: center; }
-    .container { max-width: 500px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.5); }
-    h1 { color: #00f2fe; margin-top: 0; font-size: 22px; }
+    body { background-color: #f4f6f9; color: #333; margin: 0; padding: 15px; }
+    .container { max-width: 700px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
     
+    h1 { color: #1a73e8; margin-top: 0; font-size: 22px; text-align: center; }
+
+    /* Estilo dos Banners Monetag */
     .ad-banner {
       background: linear-gradient(135deg, #ff9800, #f57c00);
       color: white;
@@ -27,329 +27,256 @@
       display: block;
       font-weight: bold;
       font-size: 14px;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      text-align: center;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
       transition: transform 0.2s;
     }
-    .ad-banner:hover { transform: scale(1.02); }
+    .ad-banner:hover { transform: scale(1.01); }
 
-    .upload-box {
-      border: 2px dashed #00f2fe;
-      background: #252525;
-      padding: 15px;
-      border-radius: 12px;
-      margin: 15px 0;
-      cursor: pointer;
+    /* Abas de Navegação */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
     }
-    input[type="file"] { display: none; }
-    .upload-btn-text { color: #00f2fe; font-weight: bold; cursor: pointer; }
-
-    video, canvas { width: 100%; border-radius: 12px; margin-top: 10px; background: #000; max-height: 350px; object-fit: contain; }
-    canvas { display: none; }
-
-    .editor-panel {
-      background: #252525;
-      padding: 15px;
-      border-radius: 12px;
-      margin-top: 15px;
-      text-align: left;
-    }
-    .control-group { margin-bottom: 12px; }
-    .control-group label { display: block; font-size: 13px; color: #aaa; margin-bottom: 5px; }
-    .control-row { display: flex; gap: 10px; }
-    
-    textarea, select {
-      width: 100%;
-      padding: 10px;
-      background: #333;
-      border: 1px solid #444;
-      color: #fff;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-    input[type="range"] { width: 100%; accent-color: #00f2fe; }
-    input[type="color"] { border: none; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; background: none; }
-
-    .btn {
-      background: linear-gradient(135deg, #00f2fe, #4facfe);
-      color: #000;
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      background: #e9ecef;
       border: none;
-      padding: 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 15px;
-      width: 100%;
+      border-radius: 8px;
       font-weight: bold;
-      margin-top: 12px;
-      box-shadow: 0 4px 15px rgba(0,242,254,0.3);
-      transition: opacity 0.2s;
+      font-size: 14px;
+      cursor: pointer;
+      color: #555;
+      transition: all 0.2s;
     }
-    .btn:hover { opacity: 0.9; }
-    .btn-ai { background: linear-gradient(135deg, #ff007f, #7928ca); color: #fff; }
-    .btn-green { background: linear-gradient(135deg, #28a745, #218838); color: #fff; }
+    .tab-btn.active {
+      background: #1a73e8;
+      color: #fff;
+    }
 
-    #statusText { margin-top: 12px; font-weight: bold; color: #00f2fe; font-size: 14px; }
-    #downloadArea { display: none; margin-top: 15px; }
+    /* Conteúdo das Abas */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Estilos do Contador */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    @media(min-width: 500px) {
+      .stats-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    .stat-card {
+      background: #f8f9fa;
+      border: 1px solid #e1e4e8;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-card span { display: block; font-size: 18px; font-weight: bold; color: #1a73e8; }
+    .stat-card label { font-size: 11px; color: #666; }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+    }
+    textarea { height: 180px; resize: vertical; }
+    textarea:focus, input[type="text"]:focus { border-color: #1a73e8; }
+
+    /* Estilos do QR Code */
+    #qrcode-container {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #qrcode img {
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    /* Botões */
+    .actions-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 15px;
+    }
+    .btn {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      flex: 1;
+      min-width: 120px;
+      text-align: center;
+    }
+    .btn-green { background-color: #28a745; }
+    .btn-gray { background-color: #6c757d; }
+
+    footer { text-align: center; margin-top: 25px; font-size: 12px; color: #888; }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>Editor IA Estilo CapCut</h1>
-    <p style="font-size: 13px; color: #aaa;">Gere legendas automáticas pelo áudio do vídeo e grave direto para a galeria!</p>
+    <h1>Ferramentas Web Práticas</h1>
 
-    <!-- BANNER MONETAG -->
+    <!-- BANNER MONETAG TOPO -->
     <a href="https://uplcm.com/4/11875710" target="_blank" class="ad-banner">
-      🎁 Clique aqui para conferir ofertas exclusivas!
+      🎁 Ofertas Exclusivas e Ferramentas Premium
     </a>
 
-    <!-- SELETOR DE VÍDEO -->
-    <div class="upload-box" onclick="document.getElementById('videoInput').click()">
-      📁 <span class="upload-btn-text">Toque para carregar um vídeo</span>
-      <input type="file" id="videoInput" accept="video/*">
+    <!-- ABAS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="trocarAba('contador')">📝 Contador de Texto</button>
+      <button class="tab-btn" onclick="trocarAba('qrcode')">📱 Gerador QR Code</button>
     </div>
 
-    <video id="videoPlayer" controls playsinline></video>
-    <canvas id="videoCanvas"></canvas>
-
-    <!-- PAINEL DE CONTROLO DE LEGENDAS -->
-    <div class="editor-panel">
-      <div class="control-group">
-        <label>Texto da Legenda (Gerado por IA ou Editável):</label>
-        <textarea id="subtitlesBox" rows="3" placeholder="Clique no botão abaixo para gerar automaticamente ou escreva aqui..."></textarea>
+    <!-- ABA 1: CONTADOR DE CARACTERES -->
+    <div id="tab-contador" class="tab-content active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span id="charCount">0</span>
+          <label>Caracteres</label>
+        </div>
+        <div class="stat-card">
+          <span id="charNoSpaceCount">0</span>
+          <label>Sem Espaços</label>
+        </div>
+        <div class="stat-card">
+          <span id="wordCount">0</span>
+          <label>Palavras</label>
+        </div>
+        <div class="stat-card">
+          <span id="readingTime">0s</span>
+          <label>Tempo Leitura</label>
+        </div>
       </div>
 
-      <!-- BOTÃO DE IA PARA TRANSCRIÇÃO AUTOMÁTICA -->
-      <button class="btn btn-ai" onclick="gerarLegendasIA()">🤖 Gerar Legendas Automáticas (IA Grátis)</button>
+      <textarea id="textInput" placeholder="Cole ou digite seu texto aqui..." oninput="atualizarEstatisticas()"></textarea>
 
-      <div class="control-row" style="margin-top: 12px;">
-        <div class="control-group" style="flex: 1;">
-          <label>Tamanho (<span id="sizeVal">26</span>px):</label>
-          <input type="range" id="fontSizeRange" min="14" max="60" value="26" oninput="document.getElementById('sizeVal').innerText = this.value">
-        </div>
-        <div class="control-group">
-          <label>Cor:</label>
-          <input type="color" id="fontColor" value="#FFEB3B">
-        </div>
+      <div class="actions-panel">
+        <button class="btn" onclick="converterMaiusculas()">MAIÚSCULAS</button>
+        <button class="btn" onclick="converterMinusculas()">minúsculas</button>
+        <button class="btn btn-green" onclick="copiarTexto()">📋 Copiar Texto</button>
+        <button class="btn btn-gray" onclick="limparTexto()">🗑️ Limpar</button>
       </div>
     </div>
 
-    <button class="btn" onclick="gerarEVideolegenda()">🎬 Renderizar Vídeo com Legendas</button>
+    <!-- ABA 2: GERADOR DE QR CODE -->
+    <div id="tab-qrcode" class="tab-content">
+      <label style="font-weight: bold; display: block; margin-bottom: 8px;">Cole a URL, Link do WhatsApp ou Chave PIX:</label>
+      <input type="text" id="qrInput" placeholder="Ex: https://seusite.com ou chave PIX" oninput="gerarQRCode()">
 
-    <p id="statusText"></p>
+      <div id="qrcode-container">
+        <div id="qrcode"></div>
+      </div>
 
-    <div id="downloadArea">
-      <button class="btn btn-green" onclick="baixarVideoComLegenda()">📥 Baixar Vídeo Legendado (Galeria)</button>
+      <div class="actions-panel" style="margin-top: 20px;">
+        <button class="btn btn-green" onclick="baixarQRCode()">📥 Baixar Imagem do QR Code</button>
+      </div>
     </div>
 
     <!-- BANNER MONETAG RODAPÉ -->
-    <a href="https://uplcm.com/4/11875710" target="_blank" class="ad-banner" style="background: linear-gradient(135deg, #4caf50, #388e3c); margin-top: 20px;">
-      ⚡ Pacote de Efeitos Premium (Desbloquear)
+    <a href="https://uplcm.com/4/11875710" target="_blank" class="ad-banner" style="background: linear-gradient(135deg, #4caf50, #388e3c); margin-top: 25px;">
+      ⚡ Acessar Ferramentas VIP Recomendadas
     </a>
+
+    <footer>
+      &copy; 2026 • Ferramentas Gratuitas Online
+    </footer>
   </div>
 
   <script>
-    const videoInput = document.getElementById('videoInput');
-    const videoPlayer = document.getElementById('videoPlayer');
-    const videoCanvas = document.getElementById('videoCanvas');
-    const ctx = videoCanvas.getContext('2d');
-    const statusText = document.getElementById('statusText');
-    const subtitlesBox = document.getElementById('subtitlesBox');
-    const fontSizeRange = document.getElementById('fontSizeRange');
-    const fontColorPicker = document.getElementById('fontColor');
-    const downloadArea = document.getElementById('downloadArea');
     const directLink = "https://uplcm.com/4/11875710";
 
-    let mediaRecorder;
-    let recordedChunks = [];
-    let processedVideoBlob = null;
-    let audioDataArray = null;
+    // Lógica das Abas
+    function trocarAba(nomeAba) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-    videoInput.addEventListener('change', async function() {
-      const file = this.files[0];
-      if (file) {
-        const fileURL = URL.createObjectURL(file);
-        videoPlayer.src = fileURL;
-        videoPlayer.load();
-        
-        videoPlayer.style.display = 'block';
-        videoCanvas.style.display = 'none';
-        downloadArea.style.display = 'none';
-        subtitlesBox.value = '';
-        statusText.innerText = '✅ Vídeo carregado com sucesso!';
-
-        // Extrai o áudio para uso da IA
-        try {
-          const arrayBuffer = await file.arrayBuffer();
-          const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-          const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-          audioDataArray = audioBuffer.getChannelData(0);
-        } catch (e) {
-          console.error("Erro ao carregar áudio:", e);
-        }
+      if (nomeAba === 'contador') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('tab-contador').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('tab-qrcode').classList.add('active');
+        gerarQRCode();
       }
-    });
+    }
 
-    // Função que utiliza a IA Whisper para transcrever o áudio grátis no navegador
-    async function gerarLegendasIA() {
+    // Lógica do Contador
+    const textInput = document.getElementById('textInput');
+    function atualizarEstatisticas() {
+      const texto = textInput.value;
+      document.getElementById('charCount').innerText = texto.length;
+      document.getElementById('charNoSpaceCount').innerText = texto.replace(/\s/g, '').length;
+      
+      const palavras = texto.trim() === '' ? 0 : texto.trim().split(/\s+/).length;
+      document.getElementById('wordCount').innerText = palavras;
+
+      const segundos = Math.ceil((palavras / 200) * 60);
+      document.getElementById('readingTime').innerText = segundos < 60 ? segundos + "s" : (segundos / 60).toFixed(1) + "m";
+    }
+
+    function converterMaiusculas() { textInput.value = textInput.value.toUpperCase(); atualizarEstatisticas(); }
+    function converterMinusculas() { textInput.value = textInput.value.toLowerCase(); atualizarEstatisticas(); }
+    function limparTexto() { textInput.value = ''; atualizarEstatisticas(); }
+    
+    function copiarTexto() {
       window.open(directLink, '_blank');
-
-      if (!audioDataArray) {
-        alert('Por favor, escolha um ficheiro de vídeo válido primeiro!');
-        return;
-      }
-
-      if (!window.transformersPipeline) {
-        alert('A inteligência artificial ainda está a carregar. Aguarde alguns segundos e tente novamente.');
-        return;
-      }
-
-      statusText.innerText = "⏳ A carregar modelo de IA Whisper (primeira vez pode demorar 20s)...";
-
-      try {
-        const transcriber = await window.transformersPipeline('automatic-speech-recognition', 'Xenova/whisper-tiny');
-        
-        statusText.innerText = "🎙️ A escutar o áudio e a gerar legendas em português...";
-        
-        const result = await transcriber(audioDataArray, {
-          chunk_length_s: 30,
-          stride_length_s: 5,
-          language: 'portuguese',
-          task: 'transcribe',
-        });
-
-        if (result && result.text) {
-          subtitlesBox.value = result.text.trim();
-          statusText.innerText = "✅ Legendas automáticas geradas com sucesso!";
-        } else {
-          statusText.innerText = "⚠️ Nenhuma fala detectada claramente. Pode digitar na caixa acima.";
-        }
-      } catch (err) {
-        console.error(err);
-        statusText.innerText = "⚠️ Erro na IA. Podes escrever o texto manualmente na caixa acima!";
-      }
+      if (!textInput.value) return alert('Não há texto para copiar!');
+      navigator.clipboard.writeText(textInput.value).then(() => alert('Texto copiado!'));
     }
 
-    function wrapText(context, text, x, y, maxWidth, lineHeight) {
-      const words = text.split(' ');
-      let line = '';
-      let lines = [];
+    // Lógica do QR Code
+    let qrObj = null;
+    function gerarQRCode() {
+      const valor = document.getElementById('qrInput').value.trim() || "https://google.com";
+      const qrDiv = document.getElementById('qrcode');
+      qrDiv.innerHTML = "";
 
-      for (let n = 0; n < words.length; n++) {
-        let testLine = line + words[n] + ' ';
-        let metrics = context.measureText(testLine);
-        let testWidth = metrics.width;
-        if (testWidth > maxWidth && n > 0) {
-          lines.push(line);
-          line = words[n] + ' ';
-        } else {
-          line = testLine;
-        }
-      }
-      lines.push(line);
-
-      const startY = y - (lines.length - 1) * lineHeight;
-      for (let k = 0; k < lines.length; k++) {
-        let currentText = lines[k].trim();
-        let textWidth = context.measureText(currentText).width;
-
-        // Fundo semitransparente moderno estilo CapCut
-        context.fillStyle = "rgba(0, 0, 0, 0.75)";
-        context.fillRect(x - (textWidth / 2) - 14, startY + (k * lineHeight) - lineHeight + 4, textWidth + 28, lineHeight + 6);
-
-        context.fillStyle = fontColorPicker.value;
-        context.fillText(currentText, x, startY + (k * lineHeight));
-      }
+      qrObj = new QRCode(qrDiv, {
+        text: valor,
+        width: 180,
+        height: 180,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+      });
     }
 
-    function renderFrame() {
-      if (videoPlayer.paused || videoPlayer.ended) return;
-
-      videoCanvas.width = videoPlayer.videoWidth || 640;
-      videoCanvas.height = videoPlayer.videoHeight || 360;
-
-      ctx.drawImage(videoPlayer, 0, 0, videoCanvas.width, videoCanvas.height);
-
-      const texto = subtitlesBox.value.trim();
-      if (texto) {
-        const baseFontSize = parseInt(fontSizeRange.value);
-        const scaleFactor = videoCanvas.height / 360;
-        const currentFontSize = Math.round(baseFontSize * scaleFactor);
-
-        ctx.font = `bold ${currentFontSize}px Arial, sans-serif`;
-        ctx.textAlign = "center";
-
-        const x = videoCanvas.width / 2;
-        const y = videoCanvas.height - (currentFontSize * 3.5);
-        const maxWidth = videoCanvas.width * 0.85;
-
-        wrapText(ctx, texto, x, y, maxWidth, currentFontSize + 10);
-      }
-
-      requestAnimationFrame(renderFrame);
-    }
-
-    async function gerarEVideolegenda() {
+    function baixarQRCode() {
       window.open(directLink, '_blank');
-
-      if (!videoInput.files[0]) {
-        alert('Por favor, selecione um ficheiro de vídeo primeiro!');
-        return;
+      const img = document.querySelector('#qrcode img');
+      if (img && img.src) {
+        const a = document.createElement('a');
+        a.href = img.src;
+        a.download = 'qrcode.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        alert('Digite algo para gerar o QR Code primeiro!');
       }
-
-      if (!subtitlesBox.value.trim()) {
-        alert('Gere as legendas automáticas ou escreva algo na caixa de texto!');
-        return;
-      }
-
-      statusText.innerText = "⏳ A renderizar o vídeo final com as legendas... Aguarde!";
-      videoPlayer.style.display = 'none';
-      videoCanvas.style.display = 'block';
-
-      videoPlayer.currentTime = 0;
-      recordedChunks = [];
-
-      const stream = videoCanvas.captureStream(30);
-      if (videoPlayer.captureStream || videoPlayer.mozCaptureStream) {
-        const audioStream = (videoPlayer.captureStream || videoPlayer.mozCaptureStream).call(videoPlayer);
-        audioStream.getAudioTracks().forEach(track => stream.addTrack(track));
-      }
-
-      mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-
-      mediaRecorder.ondataavailable = function(e) {
-        if (e.data.size > 0) recordedChunks.push(e.data);
-      };
-
-      mediaRecorder.onstop = function() {
-        processedVideoBlob = new Blob(recordedChunks, { type: 'video/webm' });
-        statusText.innerText = "✅ Vídeo pronto e legendado com sucesso!";
-        downloadArea.style.display = 'block';
-      };
-
-      videoPlayer.play();
-      mediaRecorder.start();
-      renderFrame();
-
-      videoPlayer.onended = function() {
-        mediaRecorder.stop();
-      };
-    }
-
-    function baixarVideoComLegenda() {
-      window.open(directLink, '_blank');
-
-      if (!processedVideoBlob) {
-        alert('Nenhum vídeo processado disponível!');
-        return;
-      }
-
-      const url = URL.createObjectURL(processedVideoBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'video_editado_legenda.mp4';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
     }
   </script>
 
