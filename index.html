@@ -3,96 +3,160 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerador e Renderizador de Legendas em Vídeo</title>
+  <title>Editor de Legendas Estilo CapCut</title>
   <style>
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
-    .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    h1 { color: #1a73e8; margin-top: 0; }
+    body { background-color: #121212; color: #ffffff; margin: 0; padding: 15px; text-align: center; }
+    .container { max-width: 500px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.5); }
+    h1 { color: #00f2fe; margin-top: 0; font-size: 22px; }
     
     .ad-banner {
       background: linear-gradient(135deg, #ff9800, #f57c00);
       color: white;
-      padding: 15px;
+      padding: 12px;
       border-radius: 8px;
-      margin: 20px 0;
+      margin: 15px 0;
       text-decoration: none;
       display: block;
       font-weight: bold;
-      font-size: 16px;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+      font-size: 14px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
       transition: transform 0.2s;
     }
     .ad-banner:hover { transform: scale(1.02); }
 
-    input[type="file"] { margin: 15px 0; padding: 12px; border: 2px dashed #1a73e8; border-radius: 8px; width: 100%; max-width: 400px; background: #e8f0fe; cursor: pointer; }
-    
-    video, canvas { width: 100%; max-width: 600px; border-radius: 8px; margin-top: 15px; background: #000; }
+    .upload-box {
+      border: 2px dashed #00f2fe;
+      background: #252525;
+      padding: 15px;
+      border-radius: 12px;
+      margin: 15px 0;
+      cursor: pointer;
+    }
+    input[type="file"] { display: none; }
+    .upload-btn-text { color: #00f2fe; font-weight: bold; cursor: pointer; }
+
+    video, canvas { width: 100%; border-radius: 12px; margin-top: 10px; background: #000; max-height: 400px; object-fit: contain; }
     canvas { display: none; }
-    
-    .btn {
-      background-color: #1a73e8;
-      color: white;
+
+    .editor-panel {
+      background: #252525;
+      padding: 15px;
+      border-radius: 12px;
+      margin-top: 15px;
+      text-align: left;
+    }
+    .control-group {
+      margin-bottom: 12px;
+    }
+    .control-group label {
+      display: block;
+      font-size: 13px;
+      color: #aaa;
+      margin-bottom: 5px;
+    }
+    .control-row {
+      display: flex;
+      gap: 10px;
+    }
+    input[type="text"], textarea, select {
+      width: 100%;
+      padding: 10px;
+      background: #333;
+      border: 1px solid #444;
+      color: #fff;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: #00f2fe;
+    }
+    input[type="color"] {
       border: none;
-      padding: 12px 24px;
-      border-radius: 6px;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      background: none;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+      color: #000;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
       cursor: pointer;
       font-size: 16px;
-      margin: 10px 5px;
-      font-weight: bold;
-      transition: background 0.2s;
-    }
-    .btn:hover { background-color: #1557b0; }
-    .btn-green { background-color: #28a745; }
-    .btn-green:hover { background-color: #218838; }
-
-    #subtitlesBox {
       width: 100%;
-      height: 100px;
+      font-weight: bold;
       margin-top: 15px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      resize: vertical;
-      font-size: 15px;
+      box-shadow: 0 4px 15px rgba(0,242,254,0.3);
+      transition: opacity 0.2s;
     }
-    #statusText { margin-top: 15px; font-weight: bold; color: #1a73e8; font-size: 16px; }
-    #downloadArea { display: none; margin-top: 20px; }
+    .btn:hover { opacity: 0.9; }
+    .btn-green {
+      background: linear-gradient(135deg, #28a745, #218838);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+    }
+
+    #statusText { margin-top: 12px; font-weight: bold; color: #00f2fe; font-size: 14px; }
+    #downloadArea { display: none; margin-top: 15px; }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>Gerador de Legendas em Vídeo com IA</h1>
-    <p>Escolha o seu vídeo abaixo para começar!</p>
+    <h1>Editor de Legendas Style</h1>
+    <p style="font-size: 13px; color: #aaa;">Insira seu vídeo e ajuste o estilo das legendas igualzinho aos editores profissionais!</p>
 
     <!-- BANNER MONETAG -->
     <a href="https://uplcm.com/4/11875710" target="_blank" class="ad-banner">
-      🎁 Clique aqui para conferir ofertas exclusivas e apoiar o site!
+      🎁 Clique aqui para conferir ofertas exclusivas!
     </a>
 
-    <input type="file" id="videoInput" accept="video/*">
-    <br>
+    <!-- SELETOR DE VÍDEO CUSTOMIZADO -->
+    <div class="upload-box" onclick="document.getElementById('videoInput').click()">
+      📁 <span class="upload-btn-text">Toque para escolher um vídeo</span>
+      <input type="file" id="videoInput" accept="video/*">
+    </div>
 
-    <!-- PLAYER VISÍVEL DESDE O INÍCIO -->
+    <!-- PLAYER E CANVAS -->
     <video id="videoPlayer" controls playsinline></video>
     <canvas id="videoCanvas"></canvas>
 
-    <div style="margin-top: 20px;">
-      <button class="btn" onclick="transcreverAudioReal()">🎙️ 1. Transcrever Áudio do Vídeo</button>
-      <button class="btn btn-green" onclick="gerarEVideolegenda()">🎬 2. Gerar Vídeo com Legendas</button>
+    <!-- PAINEL DE EDIÇÃO (ESTILO CAPCUT/INSHOT) -->
+    <div class="editor-panel">
+      <div class="control-group">
+        <label>Texto da Legenda:</label>
+        <textarea id="subtitlesBox" rows="2" placeholder="Escreva o texto que aparecerá no vídeo..."></textarea>
+      </div>
+
+      <div class="control-row">
+        <div class="control-group" style="flex: 1;">
+          <label>Tamanho da Fonte (<span id="sizeVal">24</span>px):</label>
+          <input type="range" id="fontSizeRange" min="14" max="60" value="26" oninput="document.getElementById('sizeVal').innerText = this.value">
+        </div>
+        <div class="control-group">
+          <label>Cor do Texto:</label>
+          <input type="color" id="fontColor" value="#FFEB3B">
+        </div>
+      </div>
     </div>
 
+    <button class="btn" onclick="gerarEVideolegenda()">🎬 Renderizar Vídeo Legendado</button>
+
     <p id="statusText"></p>
-    <textarea id="subtitlesBox" placeholder="O texto transcrito do áudio do seu vídeo aparecerá aqui..."></textarea>
 
     <div id="downloadArea">
-      <button class="btn btn-green" onclick="baixarVideoComLegenda()">📥 Baixar Vídeo Legendado (MP4/WebM)</button>
+      <button class="btn btn-green" onclick="baixarVideoComLegenda()">📥 Baixar Vídeo na Galeria (MP4)</button>
     </div>
 
     <!-- BANNER MONETAG RODAPÉ -->
-    <a href="https://uplcm.com/4/11875710" target="_blank" class="ad-banner" style="background: linear-gradient(135deg, #4caf50, #388e3c); margin-top: 30px;">
-      ⚡ Baixar Pacote de Ferramentas Premium
+    <a href="https://uplcm.com/4/11875710" target="_blank" class="ad-banner" style="background: linear-gradient(135deg, #4caf50, #388e3c); margin-top: 20px;">
+      ⚡ Pacote de Efeitos Premium (Desbloquear)
     </a>
   </div>
 
@@ -103,6 +167,8 @@
     const ctx = videoCanvas.getContext('2d');
     const statusText = document.getElementById('statusText');
     const subtitlesBox = document.getElementById('subtitlesBox');
+    const fontSizeRange = document.getElementById('fontSizeRange');
+    const fontColorPicker = document.getElementById('fontColor');
     const downloadArea = document.getElementById('downloadArea');
     const directLink = "https://uplcm.com/4/11875710";
 
@@ -110,7 +176,6 @@
     let recordedChunks = [];
     let processedVideoBlob = null;
 
-    // Garante que o vídeo carrega assim que for selecionado no celular
     videoInput.addEventListener('change', function() {
       const file = this.files[0];
       if (file) {
@@ -121,55 +186,11 @@
         videoPlayer.style.display = 'block';
         videoCanvas.style.display = 'none';
         downloadArea.style.display = 'none';
-        subtitlesBox.value = '';
-        statusText.innerText = '✅ Vídeo carregado! Clique em "1. Transcrever Áudio" ou digite a legenda na caixa.';
+        statusText.innerText = '✅ Vídeo carregado com sucesso!';
       }
     });
 
-    function transcreverAudioReal() {
-      window.open(directLink, '_blank');
-
-      if (!videoInput.files[0]) {
-        alert('Por favor, selecione um arquivo de vídeo primeiro!');
-        return;
-      }
-
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert('Reconhecimento automático não suportado neste navegador. Você pode digitar o texto na caixa abaixo!');
-        return;
-      }
-
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'pt-BR';
-      recognition.continuous = true;
-      recognition.interimResults = true;
-
-      statusText.innerText = "🎙️ Reproduzindo vídeo e escutando o áudio...";
-      subtitlesBox.value = "";
-
-      videoPlayer.currentTime = 0;
-      videoPlayer.play();
-      recognition.start();
-
-      recognition.onresult = function(event) {
-        let transcript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          transcript += event.results[i][0].transcript;
-        }
-        subtitlesBox.value = transcript;
-      };
-
-      videoPlayer.onended = function() {
-        recognition.stop();
-        statusText.innerText = "✅ Transcrição concluída! Agora clique em '2. Gerar Vídeo com Legendas'.";
-      };
-
-      recognition.onerror = function() {
-        statusText.innerText = "⚠️ Dica: Você pode digitar ou ajustar a legenda na caixa de texto abaixo!";
-      };
-    }
-
+    // Função de quebra de linha inteligente para o texto não vazar da tela
     function wrapText(context, text, x, y, maxWidth, lineHeight) {
       const words = text.split(' ');
       let line = '';
@@ -193,10 +214,12 @@
         let currentText = lines[k].trim();
         let textWidth = context.measureText(currentText).width;
 
+        // Fundo semitransparente moderno (estilo CapCut)
         context.fillStyle = "rgba(0, 0, 0, 0.75)";
-        context.fillRect(x - (textWidth / 2) - 10, startY + (k * lineHeight) - lineHeight + 6, textWidth + 20, lineHeight);
+        context.fillRect(x - (textWidth / 2) - 14, startY + (k * lineHeight) - lineHeight + 4, textWidth + 28, lineHeight + 6);
 
-        context.fillStyle = "#FFEB3B";
+        // Cor do texto escolhida pelo utilizador
+        context.fillStyle = fontColorPicker.value;
         context.fillText(currentText, x, startY + (k * lineHeight));
       }
     }
@@ -209,16 +232,22 @@
 
       ctx.drawImage(videoPlayer, 0, 0, videoCanvas.width, videoCanvas.height);
 
-      const texto = subtitlesBox.value.trim() || "Vídeo Legendado";
-      const fontSize = Math.floor(videoCanvas.height * 0.05);
-      ctx.font = `bold ${fontSize}px Arial, sans-serif`;
-      ctx.textAlign = "center";
+      const texto = subtitlesBox.value.trim();
+      if (texto) {
+        // Escala o tamanho da fonte proporcionalmente à resolução do vídeo
+        const baseFontSize = parseInt(fontSizeRange.value);
+        const scaleFactor = videoCanvas.height / 360;
+        const currentFontSize = Math.round(baseFontSize * scaleFactor);
 
-      const x = videoCanvas.width / 2;
-      const y = videoCanvas.height - (fontSize * 2);
-      const maxWidth = videoCanvas.width * 0.85;
+        ctx.font = `bold ${currentFontSize}px Arial, sans-serif`;
+        ctx.textAlign = "center";
 
-      wrapText(ctx, texto, x, y, maxWidth, fontSize + 8);
+        const x = videoCanvas.width / 2;
+        const y = videoCanvas.height - (currentFontSize * 3.5); // Posição ideal acima dos controles
+        const maxWidth = videoCanvas.width * 0.85;
+
+        wrapText(ctx, texto, x, y, maxWidth, currentFontSize + 10);
+      }
 
       requestAnimationFrame(renderFrame);
     }
@@ -227,11 +256,16 @@
       window.open(directLink, '_blank');
 
       if (!videoInput.files[0]) {
-        alert('Por favor, selecione um arquivo de vídeo primeiro!');
+        alert('Por favor, selecione um ficheiro de vídeo primeiro!');
         return;
       }
 
-      statusText.innerText = "⏳ Processando o vídeo e criando as legendas... Aguarde!";
+      if (!subtitlesBox.value.trim()) {
+        alert('Escreva uma legenda na caixa de texto para colocar no vídeo!');
+        return;
+      }
+
+      statusText.innerText = "⏳ A renderizar o vídeo com legendas personalizadas... Aguarde!";
       videoPlayer.style.display = 'none';
       videoCanvas.style.display = 'block';
 
@@ -252,7 +286,7 @@
 
       mediaRecorder.onstop = function() {
         processedVideoBlob = new Blob(recordedChunks, { type: 'video/webm' });
-        statusText.innerText = "✅ Vídeo legendado com sucesso!";
+        statusText.innerText = "✅ Vídeo pronto e legendado com sucesso!";
         downloadArea.style.display = 'block';
       };
 
@@ -276,7 +310,7 @@
       const url = URL.createObjectURL(processedVideoBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'video_legendado.mp4';
+      a.download = 'video_editado_legenda.mp4';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
