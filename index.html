@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ferramentas Web Práticas - Contador & QR Code</title>
+  <title>Ferramentas Web Práticas - Contador & QR Code Pix</title>
   <meta name="description" content="Ferramentas gratuitas online: conte caracteres e crie códigos QR Code instantaneamente para redes sociais, PIX e links.">
   
   <!-- Biblioteca de QR Code -->
@@ -82,13 +82,14 @@
     .stat-card span { display: block; font-size: 18px; font-weight: bold; color: #1a73e8; }
     .stat-card label { font-size: 11px; color: #666; }
 
-    textarea, input[type="text"] {
+    textarea, input[type="text"], select {
       width: 100%;
       padding: 12px;
       border: 2px solid #ddd;
       border-radius: 8px;
       font-size: 15px;
       outline: none;
+      margin-bottom: 10px;
     }
     textarea { height: 180px; resize: vertical; }
     textarea:focus, input[type="text"]:focus { border-color: #1a73e8; }
@@ -181,10 +182,31 @@
       </div>
     </div>
 
-    <!-- ABA 2: GERADOR DE QR CODE -->
+    <!-- ABA 2: GERADOR DE QR CODE E PIX -->
     <div id="tab-qrcode" class="tab-content">
-      <label style="font-weight: bold; display: block; margin-bottom: 8px;">Cole a URL, Link do WhatsApp ou Chave PIX:</label>
-      <input type="text" id="qrInput" placeholder="Ex: https://seusite.com ou chave PIX" oninput="gerarQRCode()">
+      <label style="font-weight: bold; display: block; margin-bottom: 5px;">Tipo de QR Code:</label>
+      <select id="qrType" onchange="alternarTipoQR()">
+        <option value="link">Link de Site ou WhatsApp</option>
+        <option value="pix">QR Code PIX (Para Pagamentos)</option>
+      </select>
+
+      <!-- CAMPOS PARA LINK COMUM -->
+      <div id="campoLink">
+        <label style="font-weight: bold; display: block; margin-bottom: 5px;">Cole a URL ou Link:</label>
+        <input type="text" id="qrInput" placeholder="Ex: https://seusite.com ou link do WhatsApp" oninput="gerarQRCode()">
+      </div>
+
+      <!-- CAMPOS PARA PIX -->
+      <div id="campoPix" style="display: none;">
+        <label style="font-weight: bold; display: block; margin-bottom: 5px;">Chave PIX (CPF, Telefone, E-mail ou Aleatória):</label>
+        <input type="text" id="pixKey" placeholder="Digite sua chave PIX aqui" oninput="gerarQRCode()">
+
+        <label style="font-weight: bold; display: block; margin-bottom: 5px;">Nome do Recebedor:</label>
+        <input type="text" id="pixName" placeholder="Ex: João da Silva" oninput="gerarQRCode()">
+
+        <label style="font-weight: bold; display: block; margin-bottom: 5px;">Cidade:</label>
+        <input type="text" id="pixCity" placeholder="Ex: Sao Paulo" value="SAO PAULO" oninput="gerarQRCode()">
+      </div>
 
       <div id="qrcode-container">
         <div id="qrcode"></div>
@@ -208,7 +230,6 @@
   <script>
     const directLink = "https://uplcm.com/4/11875710";
 
-    // Lógica das Abas
     function trocarAba(nomeAba) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -223,7 +244,6 @@
       }
     }
 
-    // Lógica do Contador
     const textInput = document.getElementById('textInput');
     function atualizarEstatisticas() {
       const texto = textInput.value;
@@ -241,16 +261,10 @@
     function converterMinusculas() { textInput.value = textInput.value.toLowerCase(); atualizarEstatisticas(); }
     function limparTexto() { textInput.value = ''; atualizarEstatisticas(); }
     
-    // Copiar Texto Universal (Compatível com Android e iPhone)
     function copiarTexto() {
-      if (!textInput.value) {
-        alert('Digite ou cole algum texto para copiar!');
-        return;
-      }
-
-      // Executa a cópia
+      if (!textInput.value) return alert('Digite ou cole algum texto para copiar!');
       textInput.select();
-      textInput.setSelectionRange(0, 99999); // Para telemóveis
+      textInput.setSelectionRange(0, 99999);
       try {
         document.execCommand('copy');
         alert('Texto copiado com sucesso!');
@@ -258,29 +272,96 @@
         navigator.clipboard.writeText(textInput.value);
         alert('Texto copiado com sucesso!');
       }
-
-      // Abre o anúncio Monetag em nova aba
       window.open(directLink, '_blank');
     }
 
-    // Lógica do QR Code
+    function alternarTipoQR() {
+      const tipo = document.getElementById('qrType').value;
+      if (tipo === 'pix') {
+        document.getElementById('campoLink').style.display = 'none';
+        document.getElementById('campoPix').style.display = 'block';
+      } else {
+        document.getElementById('campoLink').style.display = 'block';
+        document.getElementById('campoPix').style.display = 'none';
+      }
+      gerarQRCode();
+    }
+
+    // Função para formatar Payload do PIX no padrão do Banco Central (BR Code)
+    function gerarPayloadPix(chave, nome, cidade) {
+      chave = chave.trim().replace(/\s+/g, '');
+      nome = nome.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() || "RECEBEDOR";
+      cidade = cidade.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() || "SAO PAULO";
+
+      if (nome.length > 25) nome = nome.substring(0, 25);
+      if (cidade.length > 15) cidade = cidade.substring(0, 15);
+
+      function formatField(id, value) {
+        const len = value.length.toString().padStart(2, '0');
+        return id + len + value;
+      }
+
+      const merchantAccountInfo = formatField('00', 'br.gov.bcb.pix') + formatField('01', chave);
+      
+      let payload = formatField('00', '01') +
+                    formatField('26', merchantAccountInfo) +
+                    formatField('52', '0000') +
+                    formatField('53', '986') +
+                    formatField('58', 'BR') +
+                    formatField('59', nome) +
+                    formatField('60', cidade) +
+                    formatField('62', formatField('05', '***')) +
+                    '6304';
+
+      // Cálculo do CRC16
+      let crc = 0xFFFF;
+      for (let i = 0; i < payload.length; i++) {
+        crc ^= (payload.charCodeAt(i) << 8);
+        for (let j = 0; j < 8; j++) {
+          if ((crc & 0x8000) !== 0) {
+            crc = (crc << 1) ^ 0x1021;
+          } else {
+            crc = (crc << 1);
+          }
+        }
+      }
+      let crcHex = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+
+      return payload + crcHex;
+    }
+
     let qrObj = null;
     function gerarQRCode() {
-      const valor = document.getElementById('qrInput').value.trim() || "https://google.com";
+      const tipo = document.getElementById('qrType').value;
+      let valorFinal = "";
+
+      if (tipo === 'pix') {
+        const chave = document.getElementById('pixKey').value;
+        const nome = document.getElementById('pixName').value;
+        const cidade = document.getElementById('pixCity').value;
+
+        if (chave) {
+          valorFinal = gerarPayloadPix(chave, nome, cidade);
+        } else {
+          valorFinal = "Aguardando chave PIX...";
+        }
+      } else {
+        valorFinal = document.getElementById('qrInput').value.trim() || "https://google.com";
+      }
+
       const qrDiv = document.getElementById('qrcode');
       qrDiv.innerHTML = "";
 
       qrObj = new QRCode(qrDiv, {
-        text: valor,
+        text: valorFinal,
         width: 200,
         height: 200,
         colorDark : "#000000",
         colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.H
+        correctLevel : QRCode.CorrectLevel.M
       });
     }
 
-    // Download do QR Code Corrigido para Telemóveis
     function baixarQRCode() {
       const canvas = document.querySelector('#qrcode canvas');
       const img = document.querySelector('#qrcode img');
@@ -295,15 +376,14 @@
       if (imageSrc) {
         const a = document.createElement('a');
         a.href = imageSrc;
-        a.download = 'qrcode.png';
+        a.download = 'qrcode_pix.png';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
 
-        // Abre o anúncio Monetag em nova aba
         window.open(directLink, '_blank');
       } else {
-        alert('Digite algo para gerar o QR Code primeiro!');
+        alert('Digite a chave PIX para gerar o código primeiro!');
       }
     }
   </script>
