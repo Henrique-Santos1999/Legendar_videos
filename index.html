@@ -3,11 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ferramentas Web Práticas - Contador & QR Code Pix</title>
-  <meta name="description" content="Ferramentas gratuitas online: conte caracteres e crie códigos QR Code instantaneamente para redes sociais, PIX e links.">
-  
-  <!-- Biblioteca de QR Code -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <title>Ferramentas Web Práticas - Contador & Link WhatsApp</title>
+  <meta name="description" content="Ferramentas gratuitas online: conte caracteres e crie links diretos para o WhatsApp com mensagens personalizadas.">
 
   <style>
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -82,39 +79,24 @@
     .stat-card span { display: block; font-size: 18px; font-weight: bold; color: #1a73e8; }
     .stat-card label { font-size: 11px; color: #666; }
 
-    textarea, input[type="text"], select {
+    textarea, input[type="text"], input[type="tel"] {
       width: 100%;
       padding: 12px;
       border: 2px solid #ddd;
       border-radius: 8px;
       font-size: 15px;
       outline: none;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
-    textarea { height: 180px; resize: vertical; }
-    textarea:focus, input[type="text"]:focus { border-color: #1a73e8; }
-
-    /* QR Code */
-    #qrcode-container {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    #qrcode canvas, #qrcode img {
-      padding: 10px;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-    }
+    textarea { height: 150px; resize: vertical; }
+    textarea:focus, input:focus { border-color: #1a73e8; }
 
     /* Botões */
     .actions-panel {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-top: 15px;
+      margin-top: 10px;
     }
     .btn {
       background-color: #1a73e8;
@@ -129,8 +111,18 @@
       min-width: 120px;
       text-align: center;
     }
-    .btn-green { background-color: #28a745; }
+    .btn-green { background-color: #25d366; color: #fff; }
+    .btn-green:hover { background-color: #1ebc57; }
     .btn-gray { background-color: #6c757d; }
+
+    .result-box {
+      background: #e8f5e9;
+      border: 1px solid #c8e6c9;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      word-break: break-all;
+    }
 
     footer { text-align: center; margin-top: 25px; font-size: 12px; color: #888; }
   </style>
@@ -148,7 +140,7 @@
     <!-- ABAS -->
     <div class="tabs">
       <button class="tab-btn active" onclick="trocarAba('contador')">📝 Contador de Texto</button>
-      <button class="tab-btn" onclick="trocarAba('qrcode')">📱 Gerador QR Code</button>
+      <button class="tab-btn" onclick="trocarAba('whatsapp')">💬 Link do WhatsApp</button>
     </div>
 
     <!-- ABA 1: CONTADOR DE CARACTERES -->
@@ -182,38 +174,22 @@
       </div>
     </div>
 
-    <!-- ABA 2: GERADOR DE QR CODE E PIX -->
-    <div id="tab-qrcode" class="tab-content">
-      <label style="font-weight: bold; display: block; margin-bottom: 5px;">Tipo de QR Code:</label>
-      <select id="qrType" onchange="alternarTipoQR()">
-        <option value="link">Link de Site ou WhatsApp</option>
-        <option value="pix">QR Code PIX (Para Pagamentos)</option>
-      </select>
+    <!-- ABA 2: GERADOR DE LINK DO WHATSAPP -->
+    <div id="tab-whatsapp" class="tab-content">
+      <label style="font-weight: bold; display: block; margin-bottom: 5px;">Número do WhatsApp (com DDD):</label>
+      <input type="tel" id="waPhone" placeholder="Ex: 11999998888" oninput="gerarLinkWhatsApp()">
 
-      <!-- CAMPOS PARA LINK COMUM -->
-      <div id="campoLink">
-        <label style="font-weight: bold; display: block; margin-bottom: 5px;">Cole a URL ou Link:</label>
-        <input type="text" id="qrInput" placeholder="Ex: https://seusite.com ou link do WhatsApp" oninput="gerarQRCode()">
+      <label style="font-weight: bold; display: block; margin-bottom: 5px;">Mensagem Inicial (Opcional):</label>
+      <textarea id="waMessage" placeholder="Ex: Olá! Vi seu anúncio e gostaria de mais informações." oninput="gerarLinkWhatsApp()" style="height: 100px;"></textarea>
+
+      <div class="result-box">
+        <label style="font-weight: bold; color: #2e7d32; display: block; margin-bottom: 5px;">Seu Link Gerado:</label>
+        <input type="text" id="waResult" readonly placeholder="O link aparecerá aqui..." style="background: #fff; margin-bottom: 0;">
       </div>
 
-      <!-- CAMPOS PARA PIX -->
-      <div id="campoPix" style="display: none;">
-        <label style="font-weight: bold; display: block; margin-bottom: 5px;">Chave PIX (CPF, Telefone, E-mail ou Aleatória):</label>
-        <input type="text" id="pixKey" placeholder="Digite sua chave PIX aqui" oninput="gerarQRCode()">
-
-        <label style="font-weight: bold; display: block; margin-bottom: 5px;">Nome do Recebedor:</label>
-        <input type="text" id="pixName" placeholder="Ex: João da Silva" oninput="gerarQRCode()">
-
-        <label style="font-weight: bold; display: block; margin-bottom: 5px;">Cidade:</label>
-        <input type="text" id="pixCity" placeholder="Ex: Sao Paulo" value="SAO PAULO" oninput="gerarQRCode()">
-      </div>
-
-      <div id="qrcode-container">
-        <div id="qrcode"></div>
-      </div>
-
-      <div class="actions-panel" style="margin-top: 20px;">
-        <button class="btn btn-green" onclick="baixarQRCode()">📥 Baixar Imagem do QR Code</button>
+      <div class="actions-panel" style="margin-top: 15px;">
+        <button class="btn btn-green" onclick="copiarLinkWhatsApp()">📋 Copiar Link</button>
+        <button class="btn" onclick="abrirWhatsApp()">🚀 Testar no WhatsApp</button>
       </div>
     </div>
 
@@ -230,6 +206,7 @@
   <script>
     const directLink = "https://uplcm.com/4/11875710";
 
+    // Troca de Abas
     function trocarAba(nomeAba) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -239,11 +216,12 @@
         document.getElementById('tab-contador').classList.add('active');
       } else {
         document.querySelectorAll('.tab-btn')[1].classList.add('active');
-        document.getElementById('tab-qrcode').classList.add('active');
-        gerarQRCode();
+        document.getElementById('tab-whatsapp').classList.add('active');
+        gerarLinkWhatsApp();
       }
     }
 
+    // Lógica do Contador
     const textInput = document.getElementById('textInput');
     function atualizarEstatisticas() {
       const texto = textInput.value;
@@ -275,116 +253,50 @@
       window.open(directLink, '_blank');
     }
 
-    function alternarTipoQR() {
-      const tipo = document.getElementById('qrType').value;
-      if (tipo === 'pix') {
-        document.getElementById('campoLink').style.display = 'none';
-        document.getElementById('campoPix').style.display = 'block';
+    // Lógica do Gerador de Link do WhatsApp
+    function gerarLinkWhatsApp() {
+      let phone = document.getElementById('waPhone').value.replace(/\D/g, '');
+      const message = document.getElementById('waMessage').value;
+
+      if (phone) {
+        // Se a pessoa não digitar o 55 do Brasil, adiciona automaticamente
+        if (phone.length <= 11 && !phone.startsWith('55')) {
+          phone = '55' + phone;
+        }
+        let url = `https://wa.me/${phone}`;
+        if (message.trim()) {
+          url += `?text=${encodeURIComponent(message)}`;
+        }
+        document.getElementById('waResult').value = url;
       } else {
-        document.getElementById('campoLink').style.display = 'block';
-        document.getElementById('campoPix').style.display = 'none';
+        document.getElementById('waResult').value = '';
       }
-      gerarQRCode();
     }
 
-    // Função para formatar Payload do PIX no padrão do Banco Central (BR Code)
-    function gerarPayloadPix(chave, nome, cidade) {
-      chave = chave.trim().replace(/\s+/g, '');
-      nome = nome.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() || "RECEBEDOR";
-      cidade = cidade.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() || "SAO PAULO";
-
-      if (nome.length > 25) nome = nome.substring(0, 25);
-      if (cidade.length > 15) cidade = cidade.substring(0, 15);
-
-      function formatField(id, value) {
-        const len = value.length.toString().padStart(2, '0');
-        return id + len + value;
-      }
-
-      const merchantAccountInfo = formatField('00', 'br.gov.bcb.pix') + formatField('01', chave);
+    function copiarLinkWhatsApp() {
+      const resultInput = document.getElementById('waResult');
+      if (!resultInput.value) return alert('Digite o número do WhatsApp primeiro!');
       
-      let payload = formatField('00', '01') +
-                    formatField('26', merchantAccountInfo) +
-                    formatField('52', '0000') +
-                    formatField('53', '986') +
-                    formatField('58', 'BR') +
-                    formatField('59', nome) +
-                    formatField('60', cidade) +
-                    formatField('62', formatField('05', '***')) +
-                    '6304';
-
-      // Cálculo do CRC16
-      let crc = 0xFFFF;
-      for (let i = 0; i < payload.length; i++) {
-        crc ^= (payload.charCodeAt(i) << 8);
-        for (let j = 0; j < 8; j++) {
-          if ((crc & 0x8000) !== 0) {
-            crc = (crc << 1) ^ 0x1021;
-          } else {
-            crc = (crc << 1);
-          }
-        }
+      resultInput.select();
+      resultInput.setSelectionRange(0, 99999);
+      try {
+        document.execCommand('copy');
+        alert('Link do WhatsApp copiado para a área de transferência!');
+      } catch (err) {
+        navigator.clipboard.writeText(resultInput.value);
+        alert('Link do WhatsApp copiado com sucesso!');
       }
-      let crcHex = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-
-      return payload + crcHex;
+      window.open(directLink, '_blank');
     }
 
-    let qrObj = null;
-    function gerarQRCode() {
-      const tipo = document.getElementById('qrType').value;
-      let valorFinal = "";
-
-      if (tipo === 'pix') {
-        const chave = document.getElementById('pixKey').value;
-        const nome = document.getElementById('pixName').value;
-        const cidade = document.getElementById('pixCity').value;
-
-        if (chave) {
-          valorFinal = gerarPayloadPix(chave, nome, cidade);
-        } else {
-          valorFinal = "Aguardando chave PIX...";
-        }
-      } else {
-        valorFinal = document.getElementById('qrInput').value.trim() || "https://google.com";
-      }
-
-      const qrDiv = document.getElementById('qrcode');
-      qrDiv.innerHTML = "";
-
-      qrObj = new QRCode(qrDiv, {
-        text: valorFinal,
-        width: 200,
-        height: 200,
-        colorDark : "#000000",
-        colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.M
-      });
-    }
-
-    function baixarQRCode() {
-      const canvas = document.querySelector('#qrcode canvas');
-      const img = document.querySelector('#qrcode img');
-
-      let imageSrc = "";
-      if (canvas) {
-        imageSrc = canvas.toDataURL("image/png");
-      } else if (img && img.src) {
-        imageSrc = img.src;
-      }
-
-      if (imageSrc) {
-        const a = document.createElement('a');
-        a.href = imageSrc;
-        a.download = 'qrcode_pix.png';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-
-        window.open(directLink, '_blank');
-      } else {
-        alert('Digite a chave PIX para gerar o código primeiro!');
-      }
+    function abrirWhatsApp() {
+      const url = document.getElementById('waResult').value;
+      if (!url) return alert('Digite o número do WhatsApp primeiro!');
+      
+      // Abre o WhatsApp
+      window.open(url, '_blank');
+      // Abre a monetização
+      window.open(directLink, '_blank');
     }
   </script>
 
