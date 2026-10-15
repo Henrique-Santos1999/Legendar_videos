@@ -44,6 +44,15 @@
     .btn-green { background-color: #28a745; }
     .btn-green:hover { background-color: #218838; }
 
+    #subtitlesBox {
+      width: 100%;
+      height: 100px;
+      margin-top: 15px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      resize: vertical;
+    }
     #statusText { margin-top: 15px; font-weight: bold; color: #1a73e8; font-size: 16px; }
     #downloadArea { display: none; margin-top: 20px; }
   </style>
@@ -51,8 +60,8 @@
 <body>
 
   <div class="container">
-    <h1>Gerador de Legendas em Vídeo</h1>
-    <p>Envie o seu vídeo para embutir as legendas diretamente no ficheiro final!</p>
+    <h1>Gerador de Legendas em Vídeo com IA</h1>
+    <p>Envie o seu vídeo para transcrever o áudio e embutir as legendas!</p>
 
     <!-- BANNER MONETAG -->
     <a href="https://uplcm.com/4/11875710" target="_blank" class="ad-banner">
@@ -62,19 +71,17 @@
     <input type="file" id="videoInput" accept="video/*">
     <br>
 
-    <!-- PLAYER DE PRÉ-VISUALIZAÇÃO -->
     <video id="videoPlayer" controls></video>
-    
-    <!-- CANVAS ONDE O VÍDEO COM LEGENDA É DESENHADO -->
     <canvas id="videoCanvas"></canvas>
 
     <div style="margin-top: 20px;">
-      <button class="btn" onclick="gerarEVideolegenda()">🎬 Gerar Vídeo com Legendas</button>
+      <button class="btn" onclick="transcreverAudioReal()">🎙️ 1. Transcrever Áudio do Vídeo</button>
+      <button class="btn btn-green" onclick="gerarEVideolegenda()">🎬 2. Gerar Vídeo com Legendas</button>
     </div>
 
     <p id="statusText"></p>
+    <textarea id="subtitlesBox" placeholder="O texto transcrito do áudio do seu vídeo aparecerá aqui para você editar se quiser..."></textarea>
 
-    <!-- ÁREA PARA DESCARREGAR O VÍDEO FINAL -->
     <div id="downloadArea">
       <button class="btn btn-green" onclick="baixarVideoComLegenda()">📥 Baixar Vídeo Legendado (MP4/WebM)</button>
     </div>
@@ -91,7 +98,8 @@
     const videoCanvas = document.getElementById('videoCanvas');
     const ctx = videoCanvas.getContext('2d');
     const statusText = document.getElementById('statusText');
-    const downloadArea = document.getElementById('downloadArea');
+    const subtitlesBox = document.getElementById('subtitlesBox');
+    const downloadArea = downloadArea = document.getElementById('downloadArea');
     const directLink = "https://uplcm.com/4/11875710";
 
     let mediaRecorder;
@@ -106,55 +114,13 @@
         videoPlayer.style.display = 'block';
         videoCanvas.style.display = 'none';
         downloadArea.style.display = 'none';
+        subtitlesBox.value = '';
         statusText.innerText = '';
       }
     });
 
-    // Frases simuladas de legenda por tempo (segundos)
-    const legendas = [
-      { inicio: 0, fim: 3, texto: "Olá! Seja bem-vindo ao nosso aplicativo." },
-      { inicio: 3.5, fim: 7, texto: "Este vídeo foi legendado automaticamente!" },
-      { inicio: 7.5, fim: 12, texto: "Pronto para publicar no TikTok e Instagram!" }
-    ];
-
-    function renderFrame() {
-      if (videoPlayer.paused || videoPlayer.ended) return;
-
-      // Define o tamanho do canvas de acordo com o vídeo original
-      videoCanvas.width = videoPlayer.videoWidth || 640;
-      videoCanvas.height = videoPlayer.videoHeight || 360;
-
-      // Desenha o quadro atual do vídeo no Canvas
-      ctx.drawImage(videoPlayer, 0, 0, videoCanvas.width, videoCanvas.height);
-
-      // Procura a legenda correspondente ao tempo atual
-      const currentTime = videoPlayer.currentTime;
-      const legendaAtual = legendas.find(l => currentTime >= l.inicio && currentTime <= l.fim);
-
-      if (legendaAtual) {
-        // Configurações do texto da legenda (Estilo Viral)
-        const fontSize = Math.floor(videoCanvas.height * 0.05); // Tamanho proporcional
-        ctx.font = `bold ${fontSize}px Arial, sans-serif`;
-        ctx.textAlign = "center";
-        
-        const x = videoCanvas.width / 2;
-        const y = videoCanvas.height - (fontSize * 1.5);
-
-        // Fundo preto translúcido para leitura
-        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-        const textWidth = ctx.measureText(legendaAtual.texto).width;
-        ctx.fillRect(x - (textWidth / 2) - 10, y - fontSize, textWidth + 20, fontSize + 15);
-
-        // Texto Amarelo / Branco destacado
-        ctx.fillStyle = "#FFEB3B";
-        ctx.fillText(legendaAtual.texto, x, y);
-      }
-
-      requestAnimationFrame(renderFrame);
-    }
-
-    async function gerarEVideolegenda() {
-      // Abre o Direct Link do Monetag
+    // Função para escutar o áudio do vídeo usando o Reconhecimento de Voz nativo
+    function transcreverAudioReal() {
       window.open(directLink, '_blank');
 
       if (!videoInput.files[0]) {
@@ -162,15 +128,113 @@
         return;
       }
 
-      statusText.innerText = "⏳ Processando vídeo e gravando legendas no arquivo... Aguarde!";
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert('Seu navegador não suporta a transcrição nativa. Digite o texto da legenda na caixa abaixo!');
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'pt-BR';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      statusText.innerText = "🎙️ Reproduzindo vídeo e escutando o áudio em Português...";
+      subtitlesBox.value = "";
+
+      videoPlayer.currentTime = 0;
+      videoPlayer.play();
+      recognition.start();
+
+      recognition.onresult = function(event) {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          transcript += event.results[i][0].transcript;
+        }
+        subtitlesBox.value = transcript;
+      };
+
+      videoPlayer.onended = function() {
+        recognition.stop();
+        statusText.innerText = "✅ Transcrição do áudio concluída! Se desejar, faça ajustes no texto acima e clique no botão '2. Gerar Vídeo com Legendas'.";
+      };
+
+      recognition.onerror = function() {
+        statusText.innerText = "⚠️ Dica: Ajuste o texto da legenda na caixa e clique no botão '2. Gerar Vídeo com Legendas'.";
+      };
+    }
+
+    // Função para desenhar o texto quebrando linhas automaticamente
+    function wrapText(context, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      let lines = [];
+
+      for (let n = 0; n < words.length; n++) {
+        let testLine = line + words[n] + ' ';
+        let metrics = context.measureText(testLine);
+        let testWidth = metrics.width;
+        if (testWidth > maxWidth && n > 0) {
+          lines.push(line);
+          line = words[n] + ' ';
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line);
+
+      // Desenha fundo e linhas
+      const startY = y - (lines.length - 1) * lineHeight;
+      for (let k = 0; k < lines.length; k++) {
+        let currentText = lines[k].trim();
+        let textWidth = context.measureText(currentText).width;
+
+        context.fillStyle = "rgba(0, 0, 0, 0.75)";
+        context.fillRect(x - (textWidth / 2) - 10, startY + (k * lineHeight) - lineHeight + 6, textWidth + 20, lineHeight);
+
+        context.fillStyle = "#FFEB3B";
+        context.fillText(currentText, x, startY + (k * lineHeight));
+      }
+    }
+
+    function renderFrame() {
+      if (videoPlayer.paused || videoPlayer.ended) return;
+
+      videoCanvas.width = videoPlayer.videoWidth || 640;
+      videoCanvas.height = videoPlayer.videoHeight || 360;
+
+      ctx.drawImage(videoPlayer, 0, 0, videoCanvas.width, videoCanvas.height);
+
+      const texto = subtitlesBox.value.trim() || "Vídeo Legendado";
+      const fontSize = Math.floor(videoCanvas.height * 0.05);
+      ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+      ctx.textAlign = "center";
+
+      const x = videoCanvas.width / 2;
+      const y = videoCanvas.height - (fontSize * 2);
+      const maxWidth = videoCanvas.width * 0.85; // Limita a 85% da largura da tela
+
+      wrapText(ctx, texto, x, y, maxWidth, fontSize + 8);
+
+      requestAnimationFrame(renderFrame);
+    }
+
+    async function gerarEVideolegenda() {
+      window.open(directLink, '_blank');
+
+      if (!videoInput.files[0]) {
+        alert('Por favor, selecione um arquivo de vídeo primeiro!');
+        return;
+      }
+
+      statusText.innerText = "⏳ Renderizando vídeo com as legendas ajustadas... Aguarde!";
       videoPlayer.style.display = 'none';
       videoCanvas.style.display = 'block';
 
       videoPlayer.currentTime = 0;
       recordedChunks = [];
 
-      // Prepara a gravação do Canvas com áudio
-      const stream = videoCanvas.captureStream(30); // 30 FPS
+      const stream = videoCanvas.captureStream(30);
       if (videoPlayer.captureStream || videoPlayer.mozCaptureStream) {
         const audioStream = (videoPlayer.captureStream || videoPlayer.mozCaptureStream).call(videoPlayer);
         audioStream.getAudioTracks().forEach(track => stream.addTrack(track));
@@ -188,7 +252,6 @@
         downloadArea.style.display = 'block';
       };
 
-      // Inicia a renderização e a gravação
       videoPlayer.play();
       mediaRecorder.start();
       renderFrame();
@@ -199,7 +262,6 @@
     }
 
     function baixarVideoComLegenda() {
-      // Reabre o anúncio ao clicar no botão de download para maximizar a monetização
       window.open(directLink, '_blank');
 
       if (!processedVideoBlob) {
