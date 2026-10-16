@@ -6,6 +6,9 @@
   <title>Ferramentas Web Práticas - Contador & Link WhatsApp</title>
   <meta name="description" content="Ferramentas gratuitas online: conte caracteres e crie links diretos para o WhatsApp com mensagens personalizadas.">
 
+  <!-- TAG DE VERIFICAÇÃO DO GOOGLE SEARCH CONSOLE -->
+  <meta name="google-site-verification" content="fBxHVAi6GD2lBAEQ5u4yJzqd-jHJ7pLGqNUxER0lfzo" />
+
   <style>
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: #f4f6f9; color: #333; margin: 0; padding: 15px; }
@@ -259,7 +262,6 @@
       const message = document.getElementById('waMessage').value;
 
       if (phone) {
-        // Se a pessoa não digitar o 55 do Brasil, adiciona automaticamente
         if (phone.length <= 11 && !phone.startsWith('55')) {
           phone = '55' + phone;
         }
@@ -293,9 +295,7 @@
       const url = document.getElementById('waResult').value;
       if (!url) return alert('Digite o número do WhatsApp primeiro!');
       
-      // Abre o WhatsApp
       window.open(url, '_blank');
-      // Abre a monetização
       window.open(directLink, '_blank');
     }
   </script>
